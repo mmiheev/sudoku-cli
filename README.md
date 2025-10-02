@@ -2,7 +2,7 @@
 
 A Kotlin-based console implementation of the classic Sudoku puzzle. The game generates random boards and provides a minimalist interface for solving puzzles.
 
-![SUDOKU](asserts/screenshot.png)
+![SUDOKU](assets/screenshot.png)
 
 ## Features
 
