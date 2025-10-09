@@ -41,13 +41,11 @@ class Sudoku {
      * @param difficultyLevel number of cells to empty (default: 40)
      */
     fun generateBoard(difficultyLevel: Int = 40) {
-        this.difficulty = difficultyLevel
+        this.difficulty = difficultyLevel.coerceIn(30, 60)
 
         // Initialize empty board
         for (i in 0 until 9) {
-            for (j in 0 until 9) {
-                board[i][j] = 0
-            }
+            board[i].fill(0)
         }
 
         // Fill diagonal 3x3 boxes with valid Sudoku numbers
@@ -128,8 +126,8 @@ class Sudoku {
         }
 
         // Check 3x3 box
-        val startRow = row - row % 3
-        val startCol = col - col % 3
+        val startRow = (row / 3) * 3
+        val startCol = (col / 3) * 3
         for (i in 0 until 3) {
             for (j in 0 until 3) {
                 if (board[startRow + i][startCol + j] == num) return false
@@ -145,11 +143,12 @@ class Sudoku {
      */
     private fun removeNumbers(difficulty: Int) {
         var count = difficulty
-        while (count != 0) {
-            val cellId = Random.nextInt(81)
+        val cells = MutableList(81) { it }.shuffled()
+
+        for (cellId in cells) {
+            if (count == 0) break
             val i = cellId / 9
             val j = cellId % 9
-
             if (board[i][j] != 0) {
                 board[i][j] = 0
                 count--
@@ -233,25 +232,15 @@ class Sudoku {
      */
     fun saveGame(filename: String = "sudoku_save.txt"): Boolean {
         return try {
-            val writer = File(filename).bufferedWriter()
-            writer.write("$difficulty\n")
-
-            // Save current board state
-            for (i in 0 until 9) {
-                for (j in 0 until 9) {
-                    writer.write("${board[i][j]} ")
+            File(filename).bufferedWriter().use { writer ->
+                writer.write("$difficulty\n")
+                for (i in 0 until 9) {
+                    writer.write(board[i].joinToString(" ") + "\n")
                 }
-                writer.write("\n")
-            }
-
-            // Save initial number mask
-            for (i in 0 until 9) {
-                for (j in 0 until 9) {
-                    writer.write(if (initial[i][j]) "1" else "0")
+                for (i in 0 until 9) {
+                    writer.write(initial[i].joinToString("") { if (it) "1" else "0" } + "\n")
                 }
-                writer.write("\n")
             }
-            writer.close()
             true
         } catch (_: IOException) {
             false
@@ -301,9 +290,7 @@ class Sudoku {
      */
     private fun generateSolutionFromCurrent() {
         val tempBoard = Array(9) { i -> board[i].copyOf() }
-
         solveTemp(tempBoard)
-
         for (i in 0 until 9) {
             solution[i] = tempBoard[i].copyOf()
         }
